@@ -1,0 +1,13 @@
+{
+  "data": {
+    "users": [],
+    "tracks": [],
+    "artists": [],
+    "albums": [],
+    "favourites": {
+      "artists": [],
+      "tracks": [],
+      "albums": []
+    }
+  }
+}
