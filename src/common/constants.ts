@@ -7,4 +7,6 @@ const errorMessage = {
   WRONG_PASS: 'Wrong old password',
 };
 
-export { errorMessage };
+const databaseType = 'postgres';
+
+export { errorMessage, databaseType };
