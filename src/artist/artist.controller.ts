@@ -30,14 +30,14 @@ export class ArtistController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     const artist = await this.artistService.findOne(id);
     return artist;
   }
 
   @Put(':id')
   async update(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateArtistDto: UpdateArtistDto,
   ) {
     const artist = await this.artistService.update(id, updateArtistDto);
@@ -46,7 +46,7 @@ export class ArtistController {
 
   @Delete(':id')
   @HttpCode(204)
-  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
     await this.artistService.remove(id);
   }
 }

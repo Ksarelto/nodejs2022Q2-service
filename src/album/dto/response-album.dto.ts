@@ -22,5 +22,5 @@ export class ResponseAlbumDto {
   @IsString()
   @IsNotEmpty()
   @ValidateIf((object, value) => value !== null)
-  artistId: string;
+  artistId: string | null;
 }

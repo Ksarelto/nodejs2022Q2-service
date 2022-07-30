@@ -1,73 +1,80 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { v4 as uuidv4 } from 'uuid';
-import { updateObject } from 'src/common/update.object';
-import { modifyDB, addToStore } from 'src/db/modify.db';
-import { findAll, findById, getAllData } from 'src/db/find.db';
-import { ResponseAlbumDto } from './dto/response-album.dto';
+import { updateObject } from '../common/update.object';
+import { InjectRepository } from '@nestjs/typeorm';
+import { EntAlbum } from './entity/album.entity';
+import { EntityNotFoundError, Repository } from 'typeorm';
+import { EntArtist } from '../artist/entity/artist.entity';
+import { errorMessage } from 'src/common/constants';
+import { EntTrack } from 'src/track/entity/track.entity';
+import { updateEntity } from 'src/common/fetchDoc';
 
 @Injectable()
 export class AlbumService {
+  constructor(
+    @InjectRepository(EntAlbum)
+    private albumRepository: Repository<EntAlbum>,
+    @InjectRepository(EntArtist)
+    private artistRepository: Repository<EntArtist>,
+    @InjectRepository(EntTrack)
+    private trackRepository: Repository<EntTrack>,
+  ) {}
+
   async create(createAlbumDto: CreateAlbumDto) {
-    const id = uuidv4();
-
     createAlbumDto.artistId &&
-      (await findById('artists', createAlbumDto.artistId));
-
-    const newAlbum = { ...createAlbumDto, id };
-    await addToStore('albums', newAlbum);
+      (await this.artistRepository.findOneOrFail(createAlbumDto.artistId));
+    const newAlbum = await this.albumRepository.save(createAlbumDto);
     return newAlbum;
   }
 
   async findAll() {
-    const allAlbums = await findAll('albums');
-    return allAlbums;
+    const albums = await this.albumRepository.find();
+    return albums;
   }
 
   async findOne(id: string) {
-    const album = await findById('albums', id);
-    return album;
+    try {
+      const album = await this.albumRepository.findOneOrFail(id);
+      return album;
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
+      }
+    }
   }
 
   async update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    const albums = (await findAll('albums')) as ResponseAlbumDto[];
-    const album = await findById('albums', id);
+    try {
+      const album = await this.albumRepository.findOneOrFail(id);
 
-    updateAlbumDto.artistId &&
-      (await findById('artists', updateAlbumDto.artistId));
+      updateAlbumDto.artistId &&
+        (await this.artistRepository.findOneOrFail(updateAlbumDto.artistId));
 
-    const updatedAlbum = updateObject(album, updateAlbumDto);
+      const modifiedAlbum = await this.albumRepository.save(
+        updateObject(album, updateAlbumDto),
+      );
 
-    const updatedAlbums = albums.map((album) => {
-      if (album.id === id) {
-        return updatedAlbum;
+      return modifiedAlbum;
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
       }
-      return album;
-    });
-
-    await modifyDB({ albums: updatedAlbums });
-    return updatedAlbum;
+    }
   }
 
   async remove(id: string) {
-    const { albums, tracks, favourites } = await getAllData();
-    await findById('albums', id);
-    const newTracks = tracks.map((track) => {
-      if (track.albumId === id) {
-        track.albumId = null;
+    try {
+      await this.albumRepository.findOneOrFail(id);
+      await this.albumRepository.delete(id);
+      const tracks = await this.trackRepository.find({
+        where: { albumId: id },
+      });
+      await updateEntity(tracks, 'albumId', this.trackRepository);
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
       }
-      return track;
-    });
-
-    const filteredAlbums = albums.filter((album) => album.id !== id);
-    const newAlbums = favourites.albums.filter((albumId) => albumId !== id);
-    favourites.albums = newAlbums;
-
-    await modifyDB({
-      tracks: newTracks,
-      albums: filteredAlbums,
-      favourites,
-    });
+    }
   }
 }
