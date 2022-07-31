@@ -33,10 +33,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - app_volume:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
+      - db_logs:/var/log
 
 volumes:
-  app_volume:
+  db_data:
+  db_logs:
 
 networks:
  app_network:

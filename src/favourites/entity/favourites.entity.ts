@@ -22,9 +22,6 @@ export class EntFavourites {
 
   static toResponse(favs: EntFavourites) {
     const { id, ...rest } = favs;
-    Object.values(rest).forEach((v) => {
-      v.forEach((o) => delete o.favourites);
-    });
     return rest;
   }
 }

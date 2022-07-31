@@ -14,7 +14,6 @@ export class EntArtist {
 
   @ManyToOne(() => EntFavourites, (favourites) => favourites.artists, {
     nullable: true,
-    eager: true,
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
   })

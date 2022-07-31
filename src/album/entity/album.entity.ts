@@ -1,6 +1,13 @@
 import { EntFavourites } from '../../favourites/entity/favourites.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-import { Exclude } from 'class-transformer';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
+import { EntArtist } from '../../artist/entity/artist.entity';
 
 @Entity()
 export class EntAlbum {
@@ -14,14 +21,20 @@ export class EntAlbum {
   year!: number;
 
   @Column({ nullable: true })
-  artistId!: string | null;
+  artistId: string | null;
 
-  @ManyToOne(() => EntFavourites, (favourites) => favourites.albums, {
+  @OneToOne(() => EntArtist, {
     nullable: true,
-    eager: true,
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
   })
-  @Exclude()
+  @JoinColumn()
+  artist: EntArtist;
+
+  @ManyToOne(() => EntFavourites, (favourites) => favourites.albums, {
+    nullable: true,
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
+  })
   favourites: EntFavourites;
 }
