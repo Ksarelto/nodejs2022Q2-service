@@ -124,6 +124,11 @@ For testing tjis application you can use _Postman_ or you can open **https://edi
 
 If you use detached mode after you run **docker-compose** you can use the same terminal for testing,
 if you use common mode so you should open additional terminal and run command for testing there.
+You can also scan for vulnearbilities application docker image using command:
+
+```
+npm run scan
+```
 
 After application running open new terminal and enter:
 To run all tests without authorization
