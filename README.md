@@ -4,20 +4,21 @@
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
 - Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
+- Docker - [Download & Install Docker](https://docs.docker.com/get-docker/)
 
 ## How to run app
 
-- check instalation of Git and Node.js
+- check instalation of Git, Node.js and Docker
 - open IDE and run
 
 ```
-git clone {}
+git clone https://github.com/Ksarelto/nodejs2022Q2-service.git
 ```
 
-- checkout to develop branch
+- checkout to **develop-database** branch
 
 ```
-git checkout develop
+git checkout develop-database
 ```
 
 - install dependencies
@@ -26,11 +27,22 @@ git checkout develop
 npm i
 ```
 
-- (Optional) you can change PORT in _.env_ file stting PORT variable
-- start the application
+- (Optional) you can change PORT in _.env_ file setting PORT variable
+- mount application in docker contaner:
+  - if you want to use common mode use:
+  ```
+  docker-compose up
+  ```
+  - if you want to use detached mode use:
+  ```
+  docker-compose up -d
+  ```
+
+The application will start in docker container and will be available on port that was set in **.env** file.
+Also app image is stored in [Docker Hub](https://hub.docker.com) you can download it using command:
 
 ```
-npm run start or npm run start:dev
+docker pull artsiomusc72/rest-service:nest-typeorm
 ```
 
 ## How to use app
@@ -110,8 +122,10 @@ For testing tjis application you can use _Postman_ or you can open **https://edi
 
 ## Testing
 
-After application running open new terminal and enter:
+If you use detached mode after you run **docker-compose** you can use the same terminal for testing,
+if you use common mode so you should open additional terminal and run command for testing there.
 
+After application running open new terminal and enter:
 To run all tests without authorization
 
 ```
