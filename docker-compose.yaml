@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: app_container
+    image: app
+    build: .
+    command: npm run start:dev
+    restart: always
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+    environment:
+      PORT: ${PORT}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    ports:
+      - ${PORT}:${PORT}
+    volumes:
+      - .:/app/  
+      - /app/node_modules 
+
+  postgres:
+    container_name: app_database
+    build: ./db/
+    restart: always
+    ports:
+      - ${POSTRGES_PORT}:${POSTRGES_PORT}
+    networks:
+      - app_network
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - db_logs:/var/log
+
+volumes:
+  db_data:
+  db_logs:
+
+networks:
+ app_network:
+    driver: bridge
