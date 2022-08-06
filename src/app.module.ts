@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { TrackModule } from './track/track.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 import configOptions from './configs/ormconfig';
 
 @Module({
@@ -21,6 +22,7 @@ import configOptions from './configs/ormconfig';
     UserModule,
     TrackModule,
     TypeOrmModule.forRoot(configOptions),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
