@@ -1,4 +1,10 @@
-import { IsInt, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsUUID(4)
@@ -24,4 +30,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsInt()
   updatedAt: number;
+
+  @IsOptional()
+  refreshToken: string;
 }

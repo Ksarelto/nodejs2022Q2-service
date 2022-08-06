@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntUser } from './entity/user.entity';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { errorMessage } from 'src/common/constants';
+import * as bcrypt from 'bcrypt';
+import { ENV_VARIABLES } from 'src/configs/env.config';
 
 @Injectable()
 export class UserService {
@@ -15,9 +17,8 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const createdAt = String(Date.now());
     const { login, password } = createUserDto;
-    const user = new User(1, createdAt, createdAt, login, password);
+    const user = User.createUser(login, password);
     const userDb = await this.userRepository.save(user);
     return User.toResponse(userDb);
   }
@@ -44,8 +45,12 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
       const user = await this.userRepository.findOneOrFail(id);
+      const isEqualPass = bcrypt.compareSync(
+        updateUserDto.oldPassword,
+        user.password,
+      );
 
-      if (user.password !== updateUserDto.oldPassword) {
+      if (!isEqualPass) {
         throw new Error('wrong pass');
       }
 
@@ -54,7 +59,7 @@ export class UserService {
         String(user.createdAt),
         String(Date.now()),
         user.login,
-        updateUserDto.newPassword,
+        bcrypt.hashSync(updateUserDto.newPassword, +ENV_VARIABLES.CRYPT_SALT),
         id,
       );
 

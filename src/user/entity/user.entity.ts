@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -19,4 +20,8 @@ export class EntUser {
 
   @Column()
   version!: number;
+
+  @Column({ nullable: true })
+  @Exclude()
+  refreshToken: string;
 }
