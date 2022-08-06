@@ -1,10 +1,10 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class MigrationFile1659207684741 implements MigrationInterface {
-    name = 'MigrationFile1659207684741'
+export class MigrationFile1659385133041 implements MigrationInterface {
+    name = 'MigrationFile1659385133041'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "ent_user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "login" character varying NOT NULL, "password" character varying NOT NULL, "createdAt" bigint NOT NULL, "updatedAt" bigint NOT NULL, "version" integer NOT NULL, CONSTRAINT "PK_31554b950f0d538a9f15e10422e" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "ent_user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "login" character varying NOT NULL, "password" character varying NOT NULL, "createdAt" bigint NOT NULL, "updatedAt" bigint NOT NULL, "version" integer NOT NULL, "refreshToken" character varying, CONSTRAINT "PK_31554b950f0d538a9f15e10422e" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "ent_artist" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "grammy" boolean NOT NULL, "favouritesId" uuid, CONSTRAINT "PK_90fc3e41514182012ea8bacc407" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "ent_track" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL, "artistId" uuid, "albumId" uuid, "duration" integer NOT NULL, "favouritesId" uuid, CONSTRAINT "REL_949f794e9d756dea2a2b6e2aa8" UNIQUE ("artistId"), CONSTRAINT "REL_cf043d8887ebd458a1816c3112" UNIQUE ("albumId"), CONSTRAINT "PK_c81d0507645497490d5675cafdf" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "ent_favourites" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), CONSTRAINT "PK_bfa4f31975b4ebae7ecf7b69d3b" PRIMARY KEY ("id"))`);
