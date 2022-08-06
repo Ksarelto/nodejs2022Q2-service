@@ -7,6 +7,8 @@ import { AlbumModule } from './album/album.module';
 import { UserModule } from './user/user.module';
 import { TrackModule } from './track/track.module';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import configOptions from './configs/ormconfig';
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { ConfigModule } from '@nestjs/config';
     AlbumModule,
     UserModule,
     TrackModule,
+    TypeOrmModule.forRoot(configOptions),
   ],
   controllers: [AppController],
   providers: [AppService],

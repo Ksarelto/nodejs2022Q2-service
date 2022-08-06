@@ -1,63 +1,84 @@
-import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './dto/user.model';
-import { findAll, findUser } from 'src/db/find.db';
-import { modifyDB, addToStore } from 'src/db/modify.db';
+import { InjectRepository } from '@nestjs/typeorm';
+import { EntUser } from './entity/user.entity';
+import { EntityNotFoundError, Repository } from 'typeorm';
+import { errorMessage } from 'src/common/constants';
 
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectRepository(EntUser)
+    private userRepository: Repository<EntUser>,
+  ) {}
+
   async create(createUserDto: CreateUserDto) {
-    const id = uuidv4();
-    const createdAt = Date.now();
+    const createdAt = String(Date.now());
     const { login, password } = createUserDto;
-    const user = new User(id, 1, createdAt, createdAt, login, password);
-    await addToStore('users', user);
-    return User.toResponse(user);
+    const user = new User(1, createdAt, createdAt, login, password);
+    const userDb = await this.userRepository.save(user);
+    return User.toResponse(userDb);
   }
 
   async findAll() {
-    const allUsers = await findAll('users');
-    const mapedUsers = (allUsers as User[]).map((user) => {
+    const allUsers = await this.userRepository.find();
+    const mapedUsers = allUsers.map((user) => {
       return User.toResponse(user);
     });
     return mapedUsers;
   }
 
   async findOne(id: string) {
-    const user = await findUser(id);
-    return User.toResponse(user as User);
+    try {
+      const user = await this.userRepository.findOneOrFail({ id });
+      return User.toResponse(user);
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
+      }
+    }
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const users = await findAll('users');
-    const user = await findUser(id, updateUserDto.oldPassword);
-    const updatedUser = new User(
-      id,
-      user.version + 1,
-      user.createdAt,
-      Date.now(),
-      user.login,
-      updateUserDto.newPassword,
-    );
+    try {
+      const user = await this.userRepository.findOneOrFail(id);
 
-    const updatedUsers = (users as User[]).map((user) => {
-      if (user.id === id) {
-        return updatedUser;
+      if (user.password !== updateUserDto.oldPassword) {
+        throw new Error('wrong pass');
       }
 
-      return user;
-    });
+      const updatedUser = new User(
+        user.version + 1,
+        String(user.createdAt),
+        String(Date.now()),
+        user.login,
+        updateUserDto.newPassword,
+        id,
+      );
 
-    modifyDB({ users: updatedUsers });
-    return User.toResponse(updatedUser);
+      await this.userRepository.save({ ...updatedUser, id });
+      return User.toResponse(updatedUser);
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
+      }
+
+      if (e instanceof Error) {
+        throw new HttpException(errorMessage.WRONG_PASS, HttpStatus.FORBIDDEN);
+      }
+    }
   }
 
   async remove(id: string) {
-    const users = await findAll('users');
-    await findUser(id);
-    const filteredUsers = (users as User[]).filter((user) => user.id !== id);
-    modifyDB({ users: filteredUsers });
+    try {
+      await this.userRepository.findOneOrFail(id);
+      await this.userRepository.delete(id);
+    } catch (e) {
+      if (e instanceof EntityNotFoundError) {
+        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
+      }
+    }
   }
 }

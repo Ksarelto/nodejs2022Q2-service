@@ -30,14 +30,14 @@ export class TrackController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     const track = await this.trackService.findOne(id);
     return track;
   }
 
   @Put(':id')
   async update(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateTrackDto: UpdateTrackDto,
   ) {
     const track = await this.trackService.update(id, updateTrackDto);
@@ -46,7 +46,7 @@ export class TrackController {
 
   @Delete(':id')
   @HttpCode(204)
-  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
     await this.trackService.remove(id);
   }
 }
