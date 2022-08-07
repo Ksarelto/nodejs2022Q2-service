@@ -4,8 +4,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './dto/user.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntUser } from './entity/user.entity';
-import { EntityNotFoundError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { errorMessage } from 'src/common/constants';
+import * as bcrypt from 'bcrypt';
+import { ENV_VARIABLES } from 'src/configs/env.config';
 
 @Injectable()
 export class UserService {
@@ -15,9 +17,8 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const createdAt = String(Date.now());
     const { login, password } = createUserDto;
-    const user = new User(1, createdAt, createdAt, login, password);
+    const user = User.createUser(login, password);
     const userDb = await this.userRepository.save(user);
     return User.toResponse(userDb);
   }
@@ -31,54 +32,36 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    try {
-      const user = await this.userRepository.findOneOrFail({ id });
-      return User.toResponse(user);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    const user = await this.userRepository.findOneOrFail({ id });
+    return User.toResponse(user);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    try {
-      const user = await this.userRepository.findOneOrFail(id);
+    const user = await this.userRepository.findOneOrFail(id);
+    const isEqualPass = bcrypt.compareSync(
+      updateUserDto.oldPassword,
+      user.password,
+    );
 
-      if (user.password !== updateUserDto.oldPassword) {
-        throw new Error('wrong pass');
-      }
-
-      const updatedUser = new User(
-        user.version + 1,
-        String(user.createdAt),
-        String(Date.now()),
-        user.login,
-        updateUserDto.newPassword,
-        id,
-      );
-
-      await this.userRepository.save({ ...updatedUser, id });
-      return User.toResponse(updatedUser);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-
-      if (e instanceof Error) {
-        throw new HttpException(errorMessage.WRONG_PASS, HttpStatus.FORBIDDEN);
-      }
+    if (!isEqualPass) {
+      throw new HttpException(errorMessage.WRONG_PASS, HttpStatus.FORBIDDEN);
     }
+
+    const updatedUser = new User(
+      user.version + 1,
+      String(user.createdAt),
+      String(Date.now()),
+      user.login,
+      bcrypt.hashSync(updateUserDto.newPassword, +ENV_VARIABLES.CRYPT_SALT),
+      id,
+    );
+
+    await this.userRepository.save({ ...updatedUser, id });
+    return User.toResponse(updatedUser);
   }
 
   async remove(id: string) {
-    try {
-      await this.userRepository.findOneOrFail(id);
-      await this.userRepository.delete(id);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    await this.userRepository.findOneOrFail(id);
+    await this.userRepository.delete(id);
   }
 }

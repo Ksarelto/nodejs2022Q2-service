@@ -120,6 +120,18 @@ For testing tjis application you can use _Postman_ or you can open **https://edi
 | **/favs/album/{id}**  | Delete album from favourites  |
 | **/favs/artist/{id}** | Delete artist from favourites |
 
+## Logging
+
+Log files are saving in **app_log** volume in docker. If you want to check in:
+To change log level set to env variable in _.env_ folder **LOGGING_LEVEL** from 4 to 0
+To change max size of logging file before rotation set **MAX_LOG_FILE_SIZE** in _.env_ folder,
+if you wnat set kilobytes add _k_ to number, megabytes add _m_, gigabytes add _g_.
+
+- open Docker Desktop
+- open _volumes_ tab
+- open volume **nodejs2022q2-service_app_logs**
+- open tab DATA(here are saved log files, u can save it localy and see logs)
+
 ## Testing
 
 If you use detached mode after you run **docker-compose** you can use the same terminal for testing,
@@ -134,7 +146,7 @@ After application running open new terminal and enter:
 To run all tests without authorization
 
 ```
-npm run test
+npm run test:auth
 ```
 
 To run only one of all test suites

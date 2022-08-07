@@ -17,6 +17,7 @@ services:
     ports:
       - ${PORT}:${PORT}
     volumes:
+      - app_logs:/app/src/logger/logs
       - .:/app/  
       - /app/node_modules 
 
@@ -39,6 +40,7 @@ services:
 volumes:
   db_data:
   db_logs:
+  app_logs:
 
 networks:
  app_network:

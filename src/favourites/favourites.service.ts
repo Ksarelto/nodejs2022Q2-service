@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntAlbum } from '../album/entity/album.entity';
 import { EntArtist } from '../artist/entity/artist.entity';
 import { EntTrack } from '../track/entity/track.entity';
-import { EntityNotFoundError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { EntFavourites } from './entity/favourites.entity';
 import { errorMessage } from 'src/common/constants';
 
@@ -27,119 +27,109 @@ export class FavouritesService {
   }
 
   async addTrack(id: string) {
-    try {
-      const track = await this.trackRepository.findOneOrFail(id);
-      const [favourites] = await this.favouritesRepository.find({
-        relations: ['artists', 'tracks', 'albums'],
-      });
-      favourites.tracks.push(track);
-      await this.favouritesRepository.save(favourites);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          errorMessage.tracks,
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
+    const track = await this.trackRepository.findOne(id);
+
+    if (!track) {
+      throw new HttpException(
+        errorMessage.tracks,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
+
+    const [favourites] = await this.favouritesRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+    favourites.tracks.push(track);
+    await this.favouritesRepository.save(favourites);
   }
 
   async removeTrack(id: string) {
-    try {
-      await this.trackRepository.findOneOrFail(id);
-      const [favourites] = await this.favouritesRepository.find({
-        relations: ['artists', 'tracks', 'albums'],
-      });
-      const updatedTracks = favourites.tracks.filter(
-        (track) => track.id !== id,
+    const track = await this.trackRepository.findOne(id);
+
+    if (!track) {
+      throw new HttpException(
+        errorMessage.tracks,
+        HttpStatus.UNPROCESSABLE_ENTITY,
       );
-      favourites.tracks = updatedTracks;
-      await this.favouritesRepository.save(favourites);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          errorMessage.tracks,
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
     }
+
+    const [favourites] = await this.favouritesRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+    const updatedTracks = favourites.tracks.filter((track) => track.id !== id);
+    favourites.tracks = updatedTracks;
+    await this.favouritesRepository.save(favourites);
   }
 
   async addAlbum(id: string) {
-    try {
-      const album = await this.albumRepository.findOneOrFail(id);
-      const [favourites] = await this.favouritesRepository.find({
-        relations: ['artists', 'tracks', 'albums'],
-      });
-      favourites.albums.push(album);
-      await this.favouritesRepository.save(favourites);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          errorMessage.tracks,
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
+    const album = await this.albumRepository.findOne(id);
+
+    if (!album) {
+      throw new HttpException(
+        errorMessage.albums,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
+
+    const [favourites] = await this.favouritesRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+    favourites.albums.push(album);
+    await this.favouritesRepository.save(favourites);
   }
 
   async removeAlbum(id: string) {
-    try {
-      await this.albumRepository.findOneOrFail(id);
-      const [favourites] = await this.favouritesRepository.find({
-        relations: ['artists', 'tracks', 'albums'],
-      });
-      const updatedAlbums = favourites.albums.filter(
-        (album) => album.id !== id,
+    const album = await this.albumRepository.findOne(id);
+
+    if (!album) {
+      throw new HttpException(
+        errorMessage.albums,
+        HttpStatus.UNPROCESSABLE_ENTITY,
       );
-      favourites.albums = updatedAlbums;
-      await this.favouritesRepository.save(favourites);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          errorMessage.tracks,
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
     }
+
+    const [favourites] = await this.favouritesRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+    const updatedAlbums = favourites.albums.filter((album) => album.id !== id);
+    favourites.albums = updatedAlbums;
+    await this.favouritesRepository.save(favourites);
   }
 
   async addArtist(id: string) {
-    try {
-      const artist = await this.artistRepository.findOneOrFail(id);
-      const [favourites] = await this.favouritesRepository.find({
-        relations: ['artists', 'tracks', 'albums'],
-      });
-      favourites.artists.push(artist);
-      await this.favouritesRepository.save(favourites);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          errorMessage.tracks,
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
+    const artist = await this.artistRepository.findOne(id);
+
+    if (!artist) {
+      throw new HttpException(
+        errorMessage.artists,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
+
+    const [favourites] = await this.favouritesRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+    favourites.artists.push(artist);
+    await this.favouritesRepository.save(favourites);
   }
 
   async removeArtist(id: string) {
-    try {
-      await this.artistRepository.findOneOrFail(id);
-      const [favourites] = await this.favouritesRepository.find({
-        relations: ['artists', 'tracks', 'albums'],
-      });
-      const updatedArtists = favourites.artists.filter(
-        (artist) => artist.id !== id,
+    const artist = await this.artistRepository.findOne(id);
+
+    if (!artist) {
+      throw new HttpException(
+        errorMessage.artists,
+        HttpStatus.UNPROCESSABLE_ENTITY,
       );
-      favourites.artists = updatedArtists;
-      await this.favouritesRepository.save(favourites);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(
-          errorMessage.tracks,
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
-      }
     }
+
+    const [favourites] = await this.favouritesRepository.find({
+      relations: ['artists', 'tracks', 'albums'],
+    });
+    const updatedArtists = favourites.artists.filter(
+      (artist) => artist.id !== id,
+    );
+    favourites.artists = updatedArtists;
+    await this.favouritesRepository.save(favourites);
   }
 }
