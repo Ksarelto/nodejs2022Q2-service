@@ -1,12 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntTrack } from './entity/track.entity';
-import { EntityNotFoundError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { EntAlbum } from '../album/entity/album.entity';
 import { EntArtist } from '../artist/entity/artist.entity';
-import { errorMessage } from 'src/common/constants';
 import { findOne } from 'src/common/repositoryMethods';
 
 @Injectable()
@@ -33,50 +32,32 @@ export class TrackService {
   }
 
   async findOne(id: string) {
-    try {
-      const track = await this.trackRepository.findOneOrFail(id);
-      return track;
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    const track = await this.trackRepository.findOneOrFail(id);
+    return track;
   }
 
   async update(id: string, updateTrackDto: UpdateTrackDto) {
-    try {
-      await this.trackRepository.findOneOrFail(id);
-      const artist = await findOne({
-        id: updateTrackDto.artistId,
-        repo: this.artistRepository,
-      });
-      const album = await findOne({
-        id: updateTrackDto.albumId,
-        repo: this.albumRepository,
-      });
-      const updatedTrack = await this.trackRepository.save({
-        ...updateTrackDto,
-        artist,
-        album,
-        id,
-      });
+    await this.trackRepository.findOneOrFail(id);
+    const artist = await findOne({
+      id: updateTrackDto.artistId,
+      repo: this.artistRepository,
+    });
+    const album = await findOne({
+      id: updateTrackDto.albumId,
+      repo: this.albumRepository,
+    });
+    const updatedTrack = await this.trackRepository.save({
+      ...updateTrackDto,
+      artist,
+      album,
+      id,
+    });
 
-      return updatedTrack;
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    return updatedTrack;
   }
 
   async remove(id: string) {
-    try {
-      await this.trackRepository.findOneOrFail(id);
-      await this.trackRepository.delete(id);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    await this.trackRepository.findOneOrFail(id);
+    await this.trackRepository.delete(id);
   }
 }

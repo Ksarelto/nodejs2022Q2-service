@@ -1,11 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntAlbum } from './entity/album.entity';
-import { EntityNotFoundError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { EntArtist } from '../artist/entity/artist.entity';
-import { errorMessage } from '../common/constants';
 import { EntTrack } from '../track/entity/track.entity';
 import { findOne } from '../common/repositoryMethods';
 
@@ -32,41 +31,23 @@ export class AlbumService {
   }
 
   async findOne(id: string) {
-    try {
-      const album = await this.albumRepository.findOneOrFail(id);
-      return album;
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    const album = await this.albumRepository.findOneOrFail(id);
+    return album;
   }
 
   async update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    try {
-      await this.albumRepository.findOneOrFail(id);
-      const artist = await findOne({
-        id: updateAlbumDto.artistId,
-        repo: this.artistRepository,
-      });
-      const result = { ...updateAlbumDto, artist, id };
-      const modifiedAlbum = await this.albumRepository.save(result);
-      return modifiedAlbum;
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    await this.albumRepository.findOneOrFail(id);
+    const artist = await findOne({
+      id: updateAlbumDto.artistId,
+      repo: this.artistRepository,
+    });
+    const result = { ...updateAlbumDto, artist, id };
+    const modifiedAlbum = await this.albumRepository.save(result);
+    return modifiedAlbum;
   }
 
   async remove(id: string) {
-    try {
-      await this.albumRepository.findOneOrFail(id);
-      await this.albumRepository.delete(id);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    await this.albumRepository.findOneOrFail(id);
+    await this.albumRepository.delete(id);
   }
 }

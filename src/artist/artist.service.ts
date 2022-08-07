@@ -1,10 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntArtist } from './entity/artist.entity';
-import { EntityNotFoundError, Repository } from 'typeorm';
-import { errorMessage } from 'src/common/constants';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ArtistService {
@@ -23,39 +22,21 @@ export class ArtistService {
   }
 
   async findOne(id: string) {
-    try {
-      const artist = await this.artistRepository.findOneOrFail(id);
-      return artist;
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    const artist = await this.artistRepository.findOneOrFail(id);
+    return artist;
   }
 
   async update(id: string, updateArtistDto: UpdateArtistDto) {
-    try {
-      await this.artistRepository.findOneOrFail(id);
-      const updatedArtist = await this.artistRepository.save({
-        ...updateArtistDto,
-        id,
-      });
-      return updatedArtist;
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    await this.artistRepository.findOneOrFail(id);
+    const updatedArtist = await this.artistRepository.save({
+      ...updateArtistDto,
+      id,
+    });
+    return updatedArtist;
   }
 
   async remove(id: string) {
-    try {
-      await this.artistRepository.findOneOrFail(id);
-      await this.artistRepository.delete(id);
-    } catch (e) {
-      if (e instanceof EntityNotFoundError) {
-        throw new HttpException(errorMessage.NO_USER, HttpStatus.NOT_FOUND);
-      }
-    }
+    await this.artistRepository.findOneOrFail(id);
+    await this.artistRepository.delete(id);
   }
 }
